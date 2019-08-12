@@ -4,8 +4,7 @@ from pprint import pprint
 import PlayerParser
 
 
-r = requests.get("https://api.sleeper.app/v1/league/412718806528438272/rosters")
-x = r.json()
+leagueID = str(386975772876750848)
 
 firstTimeToday = False
 
@@ -16,14 +15,17 @@ if firstTimeToday:
         json.dump(players.json(), playerMapFile)
 
 
-q = requests.get("https://api.sleeper.app/v1/stats/nfl/regular/2018/16")
-qq = q.json()
-pprint(qq)
+
 
 pp = PlayerParser.PlayerParser()
 
-for i in x[0]['starters']:
-    print pp.get_player_name(i)
+
+pp.get_team_average_age(0)
 
 
 
+print pp.calculate_league_avg_ages()
+
+
+
+# pprint(t)
