@@ -72,3 +72,12 @@ class PlayerParser():
             print self.get_username(self.rosterInfo[i]['owner_id'])
             print self.get_team_average_age(i)
 
+    def print_scoring_settings(self):
+        pprint(self.scoringSettings)
+
+    def get_weekly_projections(self, week):
+        p = requests.get("https://api.sleeper.app/v1/projections/nfl/regular/2019/" + str(week)).json()
+        for i in p:
+            print self.get_player_name(i)
+            pprint(p[i])
+        

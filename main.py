@@ -20,3 +20,6 @@ pp = PlayerParser.PlayerParser(leagueID)
 print pp.calculate_league_avg_ages()
 
 
+# pp.print_scoring_settings()
+
+pp.get_weekly_projections(1)
