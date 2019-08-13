@@ -6,27 +6,35 @@ class PlayerParser():
 
     def initialize_userID_map(self):
         t = requests.get("https://api.sleeper.app/v1/league/386975772876750848/users").json()
-        self.mynewdict = {}
+        self.userIDmap = {}
         for x in t:
-            self.mynewdict[x['user_id']] = x['display_name']
+            self.userIDmap[x['user_id']] = x['display_name']
+        return
+
+    def get_league_info(self, league_id):
+        self.leagueInfo = requests.get("https://api.sleeper.app/v1/league/" + league_id).json()
+        self.scoringSettings = self.leagueInfo["scoring_settings"]
+        self.initialize_userID_map()
+        return
+
+    def get_roster_info(self, league_id):
+        self.rosterInfo = requests.get("https://api.sleeper.app/v1/league/" + league_id + "/rosters").json()
         return
 
 
-    def __init__(self):
+    def __init__(self, league_id):
 
         # get league info
-        self.leagueInfo = requests.get("https://api.sleeper.app/v1/league/386975772876750848").json()
-        self.scoringSettings = self.leagueInfo["scoring_settings"]
+        self.get_league_info(league_id)
 
         # get roster info
-        self.rosterInfo = requests.get("https://api.sleeper.app/v1/league/386975772876750848/rosters").json()
-
-        # get userID map
-        self.initialize_userID_map()
+        self.get_roster_info(league_id)
 
         # load player data file
         with open("playerMap.json", 'r') as f:
              self.playerData = json.load(f)
+
+        return
     
     # methods for getting player attributes
 
@@ -42,31 +50,10 @@ class PlayerParser():
         else:
             return 0
 
-    def get_QB_Score(self, playerID):
-        pass
-
-    def get_WR_RB_TE_Score(self, playerID):
-        pass
-
-    def get_K_Score(self, playerID):
-        pass
-
-    def getPlayerScore(self, playerID):
-        playerPos = self.playerData[playerID]['position']
-
-        if playerPos == "QB":
-            resp = get_QB_Score(playerID)
-        elif (playerPos == "WR") or (playerPos == "RB") or (playerPos == "TE"):
-            resp = get_WR_RB_TE_Score(playerID)
-        elif playerPos == "K":
-            resp = get_K_Score(playerID)
-
-        return resp
-
     # methods for analyizing teams
 
     def get_username(self, user_id):
-        return self.mynewdict[str(user_id)]
+        return self.userIDmap[str(user_id)]
 
     def get_team_average_age(self, teamID):
         totalAge = 0
