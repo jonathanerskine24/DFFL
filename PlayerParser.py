@@ -34,6 +34,10 @@ class PlayerParser():
         with open("playerMap.json", 'r') as f:
              self.playerData = json.load(f)
 
+        #load player stats file
+        with open("playerStatsMap.json", "r") as f:
+            self.playerStats = json.load(f)
+
         return
     
     # methods for getting player attributes
@@ -66,6 +70,18 @@ class PlayerParser():
                 nonDefensePlayers += 1
 
         return ( float(totalAge) / nonDefensePlayers)
+    
+    def get_team_player_ranks(self, teamID):
+        playerIDs = self.rosterInfo[teamID]['players']
+        for p in playerIDs:
+            print self.get_player_name(p);
+            pprint( self.playerStats[p] )
+            print "----"
+
+    def calculate_league_player_ranks(self):
+        for i in range(0,9):
+            print self.get_username(self.rosterInfo[i]['owner_id'])
+            print self.get_team_player_ranks(i)
 
     def calculate_league_avg_ages(self):
         for i in range(0,10):
