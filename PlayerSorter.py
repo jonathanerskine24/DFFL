@@ -2,7 +2,6 @@ import json
 import requests 
 from pprint import pprint
 
-
 rank = 1
 
 class PlayerNode():
@@ -33,6 +32,7 @@ def binary_insert(root, node):
     
 
 class PlayerSorter():
+    
     def __init__(self):
 
         # load player data file

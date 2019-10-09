@@ -161,16 +161,13 @@ class PlayerParser():
     def print_scoring_settings(self):
         pprint(self.scoringSettings)
 
+    # Misc Methods
+
     def get_weekly_projections(self, week):
         p = requests.get("https://api.sleeper.app/v1/projections/nfl/regular/2019/" + str(week)).json()
         for i in p:
             print self.get_player_name(i)
             pprint(p[i])
-        
-    def calculate_team_CMC_val():
-        for i in range(0,9):
-            print self.rosterInfo[i]
-            print self.get_username(self.rosterInfo[i]['owner_id'])
 
     def print_lists(self):
         self.ps.print_all()
