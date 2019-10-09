@@ -1,26 +1,36 @@
 import json
 import requests 
 from pprint import pprint
+import PlayerSorter
 
 class PlayerParser():
 
-    def initialize_userID_map(self):
-        t = requests.get("https://api.sleeper.app/v1/league/386975772876750848/users").json()
+    def initialize_userID_map(self, league_id):
+        t = requests.get("https://api.sleeper.app/v1/league/{}/users".format(league_id)).json()
         self.userIDmap = {}
         for x in t:
             self.userIDmap[x['user_id']] = x['display_name']
+            # print "{} --> {}".format(x['user_id'], x['display_name'])
         return
 
     def get_league_info(self, league_id):
         self.leagueInfo = requests.get("https://api.sleeper.app/v1/league/" + league_id).json()
         self.scoringSettings = self.leagueInfo["scoring_settings"]
-        self.initialize_userID_map()
+        self.initialize_userID_map(league_id)
         return
+
 
     def get_roster_info(self, league_id):
         self.rosterInfo = requests.get("https://api.sleeper.app/v1/league/" + league_id + "/rosters").json()
         return
 
+    def get_username(self, user_id):
+        return self.userIDmap[str(user_id)]
+
+    def init_player_table(self):
+        self.ps = PlayerSorter.PlayerSorter()
+        self.ps.run_all()
+        self.playerTable = self.ps.get_player_table()
 
     def __init__(self, league_id):
 
@@ -38,6 +48,8 @@ class PlayerParser():
         with open("playerStatsMap.json", "r") as f:
             self.playerStats = json.load(f)
 
+        self.init_player_table()
+
         return
     
     # methods for getting player attributes
@@ -54,10 +66,12 @@ class PlayerParser():
         else:
             return 0
 
+    def get_player_position(self, playerID):
+        return self.playerData[playerID]['position']
+
     # methods for analyizing teams
 
-    def get_username(self, user_id):
-        return self.userIDmap[str(user_id)]
+    # methods for calculating things about a single team
 
     def get_team_average_age(self, teamID):
         totalAge = 0
@@ -73,10 +87,51 @@ class PlayerParser():
     
     def get_team_player_ranks(self, teamID):
         playerIDs = self.rosterInfo[teamID]['players']
+        print playerIDs
+
+    def get_team_CMC_value(self, teamID):
+        totalCMCval = 0
+        playerIDs = self.rosterInfo[teamID]['players']
         for p in playerIDs:
-            print self.get_player_name(p);
-            pprint( self.playerStats[p] )
-            print "----"
+            if ((self.get_player_position(p) != "K") and (self.get_player_position(p) != "DEF")):
+                player_name = self.get_player_name(p)
+                try:
+                    totalCMCval = totalCMCval + self.playerTable[player_name]['CMC']
+                except:
+                    pass
+        return totalCMCval
+
+    def get_team_starting_CMC_value(self, teamID):
+        totalCMCval = 0
+        playerIDs = self.rosterInfo[teamID]['starters']
+        for p in playerIDs:
+            if ((self.get_player_position(p) != "K") and (self.get_player_position(p) != "DEF")):
+                player_name = self.get_player_name(p)
+                try:
+                    totalCMCval = totalCMCval + self.playerTable[player_name]['CMC']
+                except:
+                    pass
+        return totalCMCval
+
+    def get_team_avg_ranks(self, teamID):
+        playerIDs = self.rosterInfo[teamID]['starters']
+        WR_total = 0
+        RB_total = 0
+        WR_count = 0
+        RB_count = 0
+        for p in playerIDs:
+            if (self.get_player_position(p) == 'RB'):
+                RB_total = RB_total + self.playerTable[self.get_player_name(p)]['posRank']
+                RB_count = RB_count + 1
+            if (self.get_player_position(p) == 'WR'):
+                WR_total = WR_total + self.playerTable[self.get_player_name(p)]['posRank']
+                WR_count = WR_count + 1
+        RB_avg = RB_total / float(RB_count)
+        WR_avg = WR_total / float(WR_count)
+        print "RB Avg: {:.2f} WR Avg: {:.2f}".format(RB_avg, WR_avg)
+
+
+    # Methods for calculating league wide stats
 
     def calculate_league_player_ranks(self):
         for i in range(0,9):
@@ -88,6 +143,21 @@ class PlayerParser():
             print self.get_username(self.rosterInfo[i]['owner_id'])
             print self.get_team_average_age(i)
 
+    def calculate_league_CMCs(self):
+        for i in range(0, 10):
+            print self.get_username(self.rosterInfo[i]['owner_id'])
+            print self.get_team_CMC_value(i)
+
+    def calculate_league_starting_CMCs(self):
+        for i in range(0,10):
+            print self.get_username(self.rosterInfo[i]['owner_id'])
+            print "{:.4f}".format(self.get_team_starting_CMC_value(i))
+
+    def calculate_league_pos_ranks(self):
+        for i in range(0,10):
+            print self.get_username(self.rosterInfo[i]["owner_id"])
+            self.get_team_avg_ranks(i)
+
     def print_scoring_settings(self):
         pprint(self.scoringSettings)
 
@@ -97,3 +167,10 @@ class PlayerParser():
             print self.get_player_name(i)
             pprint(p[i])
         
+    def calculate_team_CMC_val():
+        for i in range(0,9):
+            print self.rosterInfo[i]
+            print self.get_username(self.rosterInfo[i]['owner_id'])
+
+    def print_lists(self):
+        self.ps.print_all()
